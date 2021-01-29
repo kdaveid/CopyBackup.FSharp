@@ -51,8 +51,8 @@ let verbosityOption =
         takes (regex @"q(uiet)?$" |> asConst Quiet)
         takes (regex @"n(ormal)?$" |> asConst Quiet)
         takes (regex @"f(ull)?$" |> asConst Full)
-        takes (format("custom:%i").map(fun level -> Custom level))
-        takes (format("c:%i").map(fun level -> Custom level))
+        takes (format("custom:%i").map(Custom))
+        takes (format("c:%i").map(Custom))
     }
 
 
