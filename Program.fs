@@ -4,6 +4,7 @@ open MyConsole
 open Copy
 open Model
 
+// Source: https://github.com/cannorin/FSharp.CommandLine
 
 let whatIfOption =
     commandOption {
@@ -29,6 +30,25 @@ let overwriteOption =
         takes (regex @"s(kip)?$" |> asConst Skip)
     }
 
+// how this works?
+
+// let sourceOption =
+//     commandOption {
+//         names [ "s"; "source" ]
+//         description "Source path"
+//         takes (regex @"s(source)?$" |> asConst string)
+//     }
+// let destinationOption =
+//     commandOption {
+//         names [ "d"; "destination" ]
+//         description "Destination path"
+//         takes (regex @"d(destination)?$"  |> asConst string)
+//     }
+
+
+
+// from example:
+
 // let fileOption =
 //   commandOption {
 //     names ["f"; "file"]
@@ -37,6 +57,8 @@ let overwriteOption =
 //     takes (format("%s").map (fun filename -> (filename, 0)))
 //     suggests (fun _ -> [CommandSuggestion.Files None])
 //   }
+
+
 
 type Verbosity =
     | Quiet
@@ -56,7 +78,7 @@ let verbosityOption =
     }
 
 
-let test =
+let init =
     { From = @"C:\Users\david.keller\source\repos\copybackup"
       To = @"C:\Temp"
       SearchPattern = Some "*.*"
@@ -76,38 +98,54 @@ let printOptions verbosity operation whatIf =
     | DoItReally -> warn <| sprintf "Really doing it!\n"
 
 
-let mainOps verbosity operation overwrite whatIf =
+let mainOps verbosity operation overwrite whatIf source dest =
     printOptions verbosity operation whatIf
 
-    let test =
-        { test with
+    let options =
+        { init with
               WhatIf = whatIf
-              OverwriteMode = overwrite }
+              OverwriteMode = overwrite
+              From = source
+              To = dest }
 
-    Copy.Copy test
+    Copy.Copy options
 
 
 let mainCommand () =
     command {
         name "copy"
         description "The copy command."
-
         opt whatif in whatIfOption
                       |> CommandOption.zeroOrExactlyOne
                       |> CommandOption.whenMissingUse DoItReally
-
         opt operation in operationOption
                          |> CommandOption.zeroOrExactlyOne
                          |> CommandOption.whenMissingUse Copy
-
         opt overwrite in overwriteOption
                          |> CommandOption.zeroOrExactlyOne
                          |> CommandOption.whenMissingUse Skip
+
         opt verbosity in verbosityOption
                          |> CommandOption.zeroOrExactlyOne
                          |> CommandOption.whenMissingUse Normal
-        // do printfn "%A,%A" verbosity operationOption
-        mainOps verbosity operation overwrite whatif
+
+        // This is somehow crappy...
+
+        // opt source in sourceOption |> CommandOption.zeroOrExactlyOne 
+        // opt destination in destinationOption |> CommandOption.zeroOrExactlyOne
+
+        // let src =             
+        //   match source with
+        //     | Some x -> x "böa"
+        //     | None -> failwith "Source parameter not found. Aborting"
+        // let bla = sprintf "%s" 
+          
+        // let dest =
+        //     match destination with
+        //     | Some x -> x "b"
+        //     | None -> failwith "Destination parameter not found. Aborting"
+
+        mainOps verbosity operation overwrite whatif "src" "dest"
         return 0
     }
 
